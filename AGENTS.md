@@ -199,7 +199,7 @@ Referencias de línea según el código actual; si el fichero cambió, localiza 
 
 ### P1 — Alto
 
-- [ ] **P1-01 · Migrar Real-Debrid a la nueva abstracción (mantener comportamiento)**
+- [x] **P1-01 · Migrar Real-Debrid a la nueva abstracción (mantener comportamiento)**
   - Archivos: `Providers/RealDebridProvider.cs` (nuevo), `LegacyProviderAdapter.cs`, `DebridService.cs`, tests
   - Depende de: P0-04, P0-05
   - Criterio de aceptación: **primero** test de caracterización del comportamiento actual: `POST https://api.real-debrid.com/rest/1.0/unrestrict/link`, cabecera `Authorization: Bearer <key>`, cuerpo `application/x-www-form-urlencoded` con `link`, éxito = campo `download`. **Después** mover el cuerpo a `RealDebridProvider` y que el mismo test siga verde. Clasificación de errores nueva: 401/403 → AuthFailed; 429 → RateLimited (respetar `Retry-After`); 5xx/timeout/red → Transient; respuesta correcta sin `download` → Permanent; mensaje de error de RD en el log (campo `error` del JSON: **a verificar** en https://api.real-debrid.com). Lectura con `ParseAsync(stream, ct)`.

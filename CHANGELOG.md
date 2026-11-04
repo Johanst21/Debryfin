@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Translated all plugin UI strings, logs and comments to English.
+- Migrated Real-Debrid logic to a native provider (`Providers/RealDebridProvider.cs`).
 
 ## [1.3.0.0] - 2026-11-04
 
