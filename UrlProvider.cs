@@ -109,7 +109,7 @@ namespace Debryfin
 
         private List<MediaSourceInfo> BuildMediaSourceInfo(string directUrl, string sourcePath, BaseItem item)
         {
-            var config = Plugin.Instance.Configuration;
+            var config = Plugin.Instance?.SafeGetOptions();
             
             // Generar un nombre limpio basado en el archivo (ej: "Peli [4K]" -> "4K")
             var name = Path.GetFileNameWithoutExtension(sourcePath);
@@ -126,7 +126,7 @@ namespace Debryfin
                 Name = name // <--- Fix para "Sin nombre"
             };
 
-            if (config.UseProxyMode)
+            if (config?.UseProxyMode ?? false)
             {
                 info.SupportsDirectPlay = false;
                 info.SupportsDirectStream = true; 
@@ -146,9 +146,10 @@ namespace Debryfin
             return item is Video && item.Path != null && item.Path.EndsWith(".strm", StringComparison.OrdinalIgnoreCase);
         }
 
-        public Task<ILiveStream> OpenMediaSource(string openToken, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
-        {
-            return Task.FromResult<ILiveStream>(null);
-        }
+        // 4.10 signature: OpenMediaSource gained 'consumerId' as 2nd parameter.
+        // Debryfin has no live streams to open, so this is a no-op stub.
+        public Task<ILiveStream> OpenMediaSource(string openToken, string consumerId,
+            List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
+            => Task.FromResult<ILiveStream>(null);
     }
 }
