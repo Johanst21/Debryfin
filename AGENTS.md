@@ -217,7 +217,7 @@ Referencias de línea según el código actual; si el fichero cambió, localiza 
   - Criterio de aceptación: la petición lleva `Authorization: Bearer <key>` y la URL **no contiene `apikey=`** (test que lo verifica); `agent=Debryfin` se mantiene; método **GET conservado** (la documentación de AD lista `link/unlock` también como POST; migrar a POST es opcional y fuera de esta tarea).
   - Notas: la documentación de AD recomienda Bearer (https://docs.alldebrid.com). **A verificar con cuenta real**: que AD acepte solo Bearer; el usuario debe probar una reproducción tras fusionar. Plan de vuelta atrás: revert del PR.
 
-- [ ] **P1-04 · Real-Debrid ya conforme: blindar "sin credenciales en URL" + redactor**
+- [x] **P1-04 · Real-Debrid ya conforme: blindar "sin credenciales en URL" + redactor**
   - Archivos: `tests/…/NoSecretsInUrlTests.cs` (nuevo), `Http/SecretRedactor.cs`
   - Depende de: P1-01
   - Criterio de aceptación: tests que recorren las peticiones capturadas de todos los proveedores migrados y fallan si la URL contiene `apikey=` o `token=` (lista blanca: TorBox `requestdl`); tests del `SecretRedactor` (cadenas con `apikey=`, `token=`, `Authorization: Bearer`); verificación de que ninguna excepción registrada contiene la key.
