@@ -5,8 +5,8 @@ namespace Debryfin.Providers
     using System.Threading.Tasks;
     using Debryfin.Configuration;
 
-    // Estrategia strangler (P0-04): envuelve CallRealDebrid / CallAllDebrid existentes
-    // sin cambiar su comportamiento; traduce null -> Transient y excepcion -> Transient.
+    // Strangler strategy (P0-04): wraps the existing CallRealDebrid / CallAllDebrid
+    // without changing their behavior; translates null -> Transient and exception -> Transient.
     public sealed class LegacyProviderAdapter : IDebridProvider
     {
         private static readonly TimeSpan ProviderTtl = TimeSpan.FromHours(72);
@@ -19,8 +19,8 @@ namespace Debryfin.Providers
         {
         }
 
-        // Seam de tests (InternalsVisibleTo "Debryfin.Tests"): permite sustituir la llamada
-        // legacy por una funcion inyectable, para probar la traduccion de resultados sin red.
+        // Test seam (InternalsVisibleTo "Debryfin.Tests"): allows replacing the legacy call
+        // with an injectable function, to test the result translation without network.
         internal LegacyProviderAdapter(
             DebridService service,
             DebridProvider id,
@@ -53,31 +53,31 @@ namespace Debryfin.Providers
                 var url = await _unrestrict(sourceLink, apiKey, ct).ConfigureAwait(false);
                 if (string.IsNullOrEmpty(url))
                 {
-                    return UnrestrictResult.Fail(ErrorKind.Transient, "El proveedor no devolvio un enlace directo.");
+                    return UnrestrictResult.Fail(ErrorKind.Transient, "The provider did not return a direct link.");
                 }
 
                 return UnrestrictResult.Ok(url);
             }
             catch (Exception)
             {
-                // Mensaje fijo (sin ex.Message) para no filtrar secretos en el resultado.
-                return UnrestrictResult.Fail(ErrorKind.Transient, "Error de comunicacion con el proveedor.");
+                // Fixed message (no ex.Message) to avoid leaking secrets in the result.
+                return UnrestrictResult.Fail(ErrorKind.Transient, "Communication error with the provider.");
             }
         }
 
         public Task<AccountInfo> GetUserInfoAsync(string apiKey, CancellationToken ct)
         {
-            // Dummy hasta P1: la informacion de cuenta real se implementara al migrar cada proveedor.
+            // Dummy until P1: real account info will be implemented when migrating each provider.
             return Task.FromResult(new AccountInfo());
         }
 
         public Task<ValidationResult> ValidateApiKeyAsync(string apiKey, CancellationToken ct)
         {
-            // Dummy hasta P1-07: no afirmar validez hasta que exista la validacion real.
+            // Dummy until P1-07: do not assert validity until real validation exists.
             return Task.FromResult(new ValidationResult
             {
                 IsValid = false,
-                Message = "Validacion de API key no implementada (pendiente P1-07)."
+                Message = "API key validation not implemented (pending P1-07)."
             });
         }
     }

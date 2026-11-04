@@ -6,12 +6,12 @@
 
 <p align="center">
   <a href="https://www.gnu.org/licenses/gpl-3.0"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3"></a>
-  <a href="https://github.com/Johanst21/Debryfin/releases/tag/v1.3.0.0"><img src="https://img.shields.io/badge/Release-v1.3.0.0-green.svg" alt="Release v1.3.0.0"></a>
+  <a href="https://github.com/Johanst21/Debryfin/releases/tag/v1.4.0.0"><img src="https://img.shields.io/badge/Release-v1.4.0.0-green.svg" alt="Release v1.4.0.0"></a>
 </p>
 
 Emby server plugin that resolves .strm links to direct URLs via Debrid providers (Real-Debrid and AllDebrid). More providers coming.
 
-**Status:** Version `v1.3.0.0`.
+**Status:** Version `v1.4.0.0`.
 
 ## Features
 * **Debrid Resolution:** Resolves `.strm` links to direct, high-speed playback URLs using Debrid providers.

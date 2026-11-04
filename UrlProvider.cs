@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library; // Necesario para interfaces
+using MediaBrowser.Controller.Library; // Required for interfaces
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
@@ -22,7 +22,7 @@ namespace Debryfin
         private readonly IFileSystem _fileSystem;
         private readonly StrmRefresher _strmRefresher;
 
-        // Tiempo de expiración del enlace generado (72 horas)
+        // Expiration time of the generated link (72 hours)
         private static readonly TimeSpan LinkExpirationTime = TimeSpan.FromHours(72);
 
         public UrlProvider(ILogManager logManager, IFileSystem fileSystem)
@@ -48,18 +48,18 @@ namespace Debryfin
             var currentFileName = Path.GetFileName(currentItemPath);
             List<string> filesToProcess = new List<string>();
 
-            try 
+            try
             {
-                // --- LÓGICA DE DETECCIÓN Y ACTUALIZACIÓN EN SEGUNDO PLANO ---
-                // Detectamos todas las versiones para actualizarlas de golpe, 
-                // así si cambias de versión, el enlace ya estará fresco.
+                // --- BACKGROUND DETECTION AND REFRESH LOGIC ---
+                // We detect all versions to refresh them in one go,
+                // so if you switch versions, the link will already be fresh.
 
                 var episodeRegex = new Regex(@"[sS](\d{2})[eE](\d{2})", RegexOptions.IgnoreCase);
                 var episodeMatch = episodeRegex.Match(currentFileName);
 
                 if (episodeMatch.Success)
                 {
-                    var identifier = episodeMatch.Value; 
+                    var identifier = episodeMatch.Value;
                     filesToProcess = _fileSystem.GetFiles(directory, new[] { ".strm" }, false, false)
                         .Select(f => f.FullName)
                         .Where(p => Path.GetFileName(p).IndexOf(identifier, StringComparison.OrdinalIgnoreCase) >= 0)
@@ -73,7 +73,7 @@ namespace Debryfin
                     filesToProcess = MovieSiblingSelector.SelectFilesToProcess(currentItemPath, strmCandidates).ToList();
                 }
 
-                // Actualizamos TODAS las versiones encontradas (Multithread)
+                // Refresh ALL the versions found (Multithread)
                 if (filesToProcess.Count > 0)
                 {
                     var tasks = filesToProcess.Distinct().Select(path => ResolveAndCacheUrlAsync(path, cancellationToken));
@@ -82,23 +82,22 @@ namespace Debryfin
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Debryfin: Error en escaneo de versiones", ex);
+                _logger.ErrorException("Debryfin: Error scanning versions", ex);
             }
 
-            // --- CORRECCIÓN DUPLICADOS ---
-            // Solo devolvemos la MediaSource del archivo que Emby pidió (item.Path).
-            // Emby se encarga de mostrar las otras versiones usando su propia lógica de agrupación.
-            // Si devolvemos todas aquí, Emby las duplica.
+            // Only return the MediaSource of the file Emby asked for (item.Path).
+            // Emby takes care of showing the other versions using its own grouping logic.
+            // If we returned all of them here, Emby would duplicate them.
 
             var finalUrl = await _fileSystem.ReadAllTextAsync(currentItemPath).ConfigureAwait(false);
-            
-            // Validación: Si el enlace sigue siendo de 1fichier o uptobox, no devolvemos nada (dejamos que Emby falle o reintente)
+
+            // Validation: if the link is still from 1fichier or uptobox, we return nothing (let Emby fail or retry)
             if (string.IsNullOrWhiteSpace(finalUrl) || finalUrl.Contains("1fichier.com") || finalUrl.Contains("uptobox.com"))
             {
                 return new List<MediaSourceInfo>();
             }
 
-            // Construimos la info con ID y Nombre para evitar líneas vacías
+            // Build the info with ID and Name to avoid empty lines
             return BuildMediaSourceInfo(finalUrl, currentItemPath, item);
         }
 
@@ -110,10 +109,10 @@ namespace Debryfin
         private List<MediaSourceInfo> BuildMediaSourceInfo(string directUrl, string sourcePath, BaseItem item)
         {
             var config = Plugin.Instance?.SafeGetOptions();
-            
-            // Generar un nombre limpio basado en el archivo (ej: "Peli [4K]" -> "4K")
+
+            // Generate a clean name based on the file (e.g. "Movie [4K]" -> "4K")
             var name = Path.GetFileNameWithoutExtension(sourcePath);
-            
+
             // Stable across process restarts (item GUID or SHA1 of path).
             var id = MediaSourceId.For(item != null ? item.Id : Guid.Empty, sourcePath);
 
@@ -122,14 +121,14 @@ namespace Debryfin
                 Path = directUrl.Trim(),
                 Protocol = MediaProtocol.Http,
                 IsRemote = true,
-                Id = id,    // <--- Fix para duplicados
-                Name = name // <--- Fix para "Sin nombre"
+                Id = id,    // <--- Fix for duplicates
+                Name = name // <--- Fix for "No name"
             };
 
             if (config?.UseProxyMode ?? false)
             {
                 info.SupportsDirectPlay = false;
-                info.SupportsDirectStream = true; 
+                info.SupportsDirectStream = true;
                 info.SupportsTranscoding = true;
             }
             else

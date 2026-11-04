@@ -11,7 +11,7 @@ namespace Debryfin.Strm
         private readonly Func<string, CancellationToken, Task<string>> _unrestrict;
         private readonly Action<string, Exception, string> _loggerError;
         private static readonly TimeSpan LinkExpirationTime = TimeSpan.FromHours(72);
-        private static readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = 
+        private static readonly ConcurrentDictionary<string, SemaphoreSlim> _locks =
             new ConcurrentDictionary<string, SemaphoreSlim>(StringComparer.OrdinalIgnoreCase);
 
         public StrmRefresher(

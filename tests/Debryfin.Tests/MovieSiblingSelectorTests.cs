@@ -20,7 +20,7 @@ namespace Debryfin.Tests
 
             var selected = MovieSiblingSelector.SelectFilesToProcess(currentPath, allStrm);
 
-            // Debe seleccionar solo la película (y sus versiones si las hubiera), NUNCA todos los archivos del directorio.
+            // Must select only the movie (and its versions, if any), NEVER all the files in the directory.
             Assert.Single(selected);
             Assert.Contains(currentPath, selected);
         }
@@ -64,8 +64,8 @@ namespace Debryfin.Tests
         [Fact]
         public void DoesNotIncludeStrmOriginalFiles()
         {
-            // Emby solo lista .strm con GetFiles(..., new[] { ".strm" }),
-            // pero si candidatePaths incluyera un .original, no debe seleccionarse si tiene extensión .strm.original
+            // Emby only lists .strm files via GetFiles(..., new[] { ".strm" }),
+            // but if candidatePaths included a .original, it must not be selected when it has a .strm.original extension
             var currentPath = "/media/movies/Alien (1979).strm";
             var allStrm = new List<string>
             {
@@ -73,9 +73,9 @@ namespace Debryfin.Tests
                 "/media/movies/Alien (1979).strm.original"
             };
 
-            // FileNameWithoutExtension de "Alien (1979).strm.original" es "Alien (1979).strm",
-            // pero en Emby solo se pasan archivos .strm obtenidos de GetFiles(directory, new[] { ".strm" }).
-            // Si filtramos por extensión .strm:
+            // FileNameWithoutExtension of "Alien (1979).strm.original" is "Alien (1979).strm",
+            // but in Emby only .strm files obtained from GetFiles(directory, new[] { ".strm" }) are passed.
+            // If we filter by the .strm extension:
             var selected = MovieSiblingSelector.SelectFilesToProcess(currentPath, allStrm);
             Assert.Contains("/media/movies/Alien (1979).strm", selected);
         }

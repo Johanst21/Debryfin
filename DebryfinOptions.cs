@@ -22,25 +22,25 @@ namespace Debryfin.Configuration
         }
 
         [JsonIgnore]
-        public override string EditorTitle => "Configuración de Debryfin";
+        public override string EditorTitle => "Debryfin Settings";
 
         [JsonIgnore]
-        public override string EditorDescription => "Configura tu proveedor de servicios Debrid para desbloquear enlaces 1fichier en archivos .strm.";
+        public override string EditorDescription => "Configure your Debrid service provider to unlock 1fichier links in .strm files.";
 
-        // LISTA DESPLEGABLE DE PROVEEDORES
-        [DisplayName("Proveedor Debrid")]
-        [Description("Selecciona el servicio que tienes contratado.")]
+        // PROVIDER DROPDOWN LIST
+        [DisplayName("Debrid Provider")]
+        [Description("Select the service you have subscribed to.")]
         public DebridProvider Provider { get; set; }
 
-        // CAMPO API KEY
+        // API KEY FIELD
         [DisplayName("API Key / Token")]
-        [Description("Copia aquí tu API Key privada del servicio seleccionado.")]
-        [IsPassword] // Esto hace que salgan asteriscos *****
+        [Description("Paste your private API Key for the selected service here.")]
+        [IsPassword] // Masks the value with asterisks *****
         public string ApiKey { get; set; }
 
-        // CHECKBOX PROXY
-        [DisplayName("Activar Modo Proxy (Anti-Baneo)")]
-        [Description("ACTIVADO: El servidor descarga el video (Seguro para compartir, consume CPU/Red). DESACTIVADO: Direct Play (Rápido, riesgo de baneo si hay múltiples IPs).")]
+        // PROXY CHECKBOX
+        [DisplayName("Enable Proxy Mode (Anti-Ban)")]
+        [Description("ENABLED: The server downloads the video (Safe to share, uses CPU/Network). DISABLED: Direct Play (Fast, risk of ban if there are multiple IPs).")]
         public bool UseProxyMode { get; set; }
     }
 }

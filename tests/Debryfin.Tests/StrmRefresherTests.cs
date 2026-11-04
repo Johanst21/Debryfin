@@ -73,7 +73,7 @@ namespace Debryfin.Tests
             var refresher = new StrmRefresher(store, unrestrict);
 
             // T1: ejecutar refreshAsync completo
-            // T2: ejecutar refreshAsync en paralelo (se bloqueará en ReadAllTextAsync de .strm)
+            // T2: run refreshAsync in parallel (it will block on ReadAllTextAsync of .strm)
             var t1 = Task.Run(() => refresher.RefreshAsync(strmPath, CancellationToken.None));
             var t2 = Task.Run(() => refresher.RefreshAsync(strmPath, CancellationToken.None));
 

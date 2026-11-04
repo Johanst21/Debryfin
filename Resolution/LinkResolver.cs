@@ -6,18 +6,18 @@ namespace Debryfin.Resolution
     using System.Threading.Tasks;
     using Debryfin.Providers;
 
-    // P0-05: resuelve un enlace de hoster a traves de un IDebridProvider aplicando:
-    //  - coalescing: las llamadas simultaneas para la misma clave comparten UNA sola peticion;
-    //  - caché negativa: tras un fallo no se repite la peticion durante la ventana de backoff.
-    // El reloj se inyecta (Func<DateTime>) para poder testear el backoff sin esperas reales.
+    // P0-05: resolves a hoster link through an IDebridProvider applying:
+    //  - coalescing: simultaneous calls for the same key share a single request;
+    //  - negative cache: after a failure the request is not repeated during the backoff window.
+    // The clock is injected (Func<DateTime>) to test the backoff without real waits.
     public sealed class LinkResolver
     {
         private readonly NegativeCache _negativeCache = new NegativeCache();
         private readonly Func<DateTime> _getUtcNow;
 
-        // Clave -> tarea en vuelo. El valor se crea con un TaskCompletionSource para que
-        // el trabajo real NO arranque dentro del factory de GetOrAdd (si arrancara, perdedores
-        // de la carrera lanzarian peticiones duplicadas al proveedor).
+        // Key -> in-flight task. The value is created with a TaskCompletionSource so that
+        // the real work does NOT start inside the GetOrAdd factory (if it did, the losers
+        // of the race would fire duplicate requests to the provider).
         private readonly ConcurrentDictionary<string, Task<LinkResolutionResult>> _inFlight =
             new ConcurrentDictionary<string, Task<LinkResolutionResult>>(StringComparer.Ordinal);
 
@@ -26,8 +26,8 @@ namespace Debryfin.Resolution
             _getUtcNow = getUtcNow ?? throw new ArgumentNullException(nameof(getUtcNow));
         }
 
-        // Visible solo para tests (InternalsVisibleTo "Debryfin.Tests"): permite verificar
-        // el estado de la caché negativa sin depender del tiempo real.
+        // Visible to tests only (InternalsVisibleTo "Debryfin.Tests"): allows verifying
+        // the state of the negative cache without depending on real time.
         internal NegativeCache NegativeCache => _negativeCache;
 
         public async Task<LinkResolutionResult> ResolveAsync(
@@ -37,17 +37,17 @@ namespace Debryfin.Resolution
             CancellationToken ct)
         {
             if (provider == null) throw new ArgumentNullException(nameof(provider));
-            if (string.IsNullOrEmpty(sourceUrl)) throw new ArgumentException("La URL de origen es obligatoria.", nameof(sourceUrl));
+            if (string.IsNullOrEmpty(sourceUrl)) throw new ArgumentException("The source URL is required.", nameof(sourceUrl));
 
             var key = BuildKey(provider, sourceUrl);
 
-            // En backoff: devolvemos el fallo sin tocar al proveedor.
+            // In backoff: we return the failure without touching the provider.
             if (_negativeCache.IsBlocked(key, _getUtcNow()))
             {
                 return new LinkResolutionResult
                 {
                     Error = ErrorKind.Transient,
-                    Message = $"Resolucion de {provider.DisplayName} en espera (backoff). Se reintenta mas tarde."
+                    Message = $"{provider.DisplayName} resolution waiting (backoff). It will be retried later."
                 };
             }
 
@@ -56,7 +56,7 @@ namespace Debryfin.Resolution
 
             if (!ReferenceEquals(task, myTcs.Task))
             {
-                // Ya hay una peticion en vuelo para esta clave: nos coalescemos con ella.
+                // There is already a request in flight for this key: we coalesce with it.
                 return await task.ConfigureAwait(false);
             }
 
@@ -68,7 +68,7 @@ namespace Debryfin.Resolution
             }
             catch (Exception ex)
             {
-                // La tarea compartida tambien debe fallar para los que se coalescaron.
+                // The shared task must also fail for those who coalesced.
                 myTcs.TrySetException(ex);
                 throw;
             }
@@ -92,7 +92,7 @@ namespace Debryfin.Resolution
 
                 if (unrestrict != null && unrestrict.Error == ErrorKind.None && !string.IsNullOrEmpty(unrestrict.Url))
                 {
-                    // El exito resetea la caché negativa de esta clave.
+                    // Success resets the negative cache for this key.
                     _negativeCache.Clear(key);
                     return new LinkResolutionResult
                     {
@@ -106,22 +106,22 @@ namespace Debryfin.Resolution
                 return new LinkResolutionResult
                 {
                     Error = kind,
-                    Message = unrestrict?.Message ?? "El proveedor no devolvio un enlace directo."
+                    Message = unrestrict?.Message ?? "The provider did not return a direct link."
                 };
             }
             catch (OperationCanceledException)
             {
-                // Cancelacion no es un fallo del proveedor: no se penaliza con backoff.
+                // Cancellation is not a provider failure: it is not penalized with backoff.
                 throw;
             }
             catch (Exception)
             {
-                // Mensaje fijo (sin ex.Message) para no filtrar secretos en el resultado.
+                // Fixed message (no ex.Message) to avoid leaking secrets in the result.
                 _negativeCache.RecordFailure(key, ErrorKind.Transient, _getUtcNow());
                 return new LinkResolutionResult
                 {
                     Error = ErrorKind.Transient,
-                    Message = "Error de comunicacion con el proveedor."
+                    Message = "Communication error with the provider."
                 };
             }
         }

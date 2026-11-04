@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using Debryfin.Configuration;
-using MediaBrowser.Common; // Necesario para IApplicationHost
+using MediaBrowser.Common; // Required for IApplicationHost
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Plugins;
@@ -18,18 +18,17 @@ namespace Debryfin
         public static DebridService DebridServiceInstance { get; private set; }
         private readonly ILogger _logger;
 
-        // --- CORRECCIÓN AQUÍ: Usamos IApplicationHost ---
         public Plugin(IApplicationHost applicationHost, ILogManager logManager) : base(applicationHost)
         {
             Instance = this;
             _logger = logManager.GetLogger(GetType().Name);
             DebridServiceInstance = new DebridService(logManager.GetLogger("DebridService"));
-            _logger.Info("Debryfin ha sido cargado correctamente.");
+            _logger.Info("Debryfin has been loaded successfully.");
         }
 
         public override Guid Id => Guid.Parse("d090d156-79db-4784-b119-68c484750329");
         public override string Name => "Debryfin";
-        public override string Description => "Desbloqueador universal de enlaces para Emby (Real-Debrid, TorBox, etc).";
+        public override string Description => "Universal link unlocker for Emby (Real-Debrid, TorBox, etc).";
 
         private DebryfinOptions _cachedOptions;
         internal DebryfinOptions SafeGetOptions()

@@ -16,9 +16,9 @@ namespace Debryfin
         private readonly ILogger _logger;
         private readonly HttpClient _httpClient;
         private readonly ProviderRegistry _registry;
-        // P0-05: añade coalescing de peticiones simultaneas y backoff ante fallos.
-        // El reloj real (UtcNow) se inyecta aqui, en el punto de composicion;
-        // la logica de LinkResolver/NegativeCache lo recibe inyectado y es testeable.
+        // P0-05: adds coalescing of simultaneous requests and backoff on failures.
+        // The real clock (UtcNow) is injected here, at the composition point;
+        // the LinkResolver/NegativeCache logic receives it injected and is testable.
         private readonly Resolution.LinkResolver _linkResolver;
 
         public DebridService(ILogger logger)
@@ -35,31 +35,31 @@ namespace Debryfin
         public async Task<string> UnrestrictLinkAsync(string sourceLink, CancellationToken ct)
         {
             var config = Plugin.Instance?.SafeGetOptions();
-            
+
             if (config == null || string.IsNullOrEmpty(config.ApiKey))
             {
-                _logger.Error("Debryfin: Configuración o API Key no encontrada.");
+                _logger.Error("Debryfin: Configuration or API Key not found.");
                 return null;
             }
 
             var provider = _registry.Get(config.Provider);
             if (provider == null)
             {
-                _logger.Warn($"Debryfin[{config.Provider}]: proveedor no implementado.");
+                _logger.Warn($"Debryfin[{config.Provider}]: provider not implemented.");
                 return null;
             }
 
             try
             {
-                // La resolucion pasa por LinkResolver (P0-05): aplica coalescing por
-                // (proveedor, url) y caché negativa con backoff. La firma publica
-                // (string, null en fallo) se mantiene.
+                // Resolution goes through LinkResolver (P0-05): applies coalescing by
+                // (provider, url) and negative cache with backoff. The public signature
+                // (string, null on failure) is kept.
                 var result = await _linkResolver.ResolveAsync(provider, sourceLink, config.ApiKey, ct).ConfigureAwait(false);
                 return result.IsSuccess ? result.Url : null;
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Debryfin: Error conectando con el proveedor.", ex);
+                _logger.ErrorException("Debryfin: Error connecting to provider.", ex);
                 return null;
             }
         }
@@ -72,8 +72,7 @@ namespace Debryfin
 
             using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode) return null;
-            
-            // CORREGIDO: ReadAsStringAsync() sin argumentos
+
             using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
             if (doc.RootElement.TryGetProperty("download", out var val)) return val.GetString();
             return null;
@@ -85,9 +84,8 @@ namespace Debryfin
             using var response = await _httpClient.GetAsync(url, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode) return null;
 
-            // CORREGIDO: ReadAsStringAsync() sin argumentos
             using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-            if (doc.RootElement.TryGetProperty("data", out var data) && 
+            if (doc.RootElement.TryGetProperty("data", out var data) &&
                 data.TryGetProperty("link", out var dlLink)) return dlLink.GetString();
             return null;
         }
@@ -101,9 +99,8 @@ namespace Debryfin
             using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode) return null;
 
-            // CORREGIDO: ReadAsStringAsync() sin argumentos
             using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-            if (doc.RootElement.TryGetProperty("data", out var data) && 
+            if (doc.RootElement.TryGetProperty("data", out var data) &&
                 data.TryGetProperty("link", out var dlLink)) return dlLink.GetString();
             return null;
         }
@@ -115,7 +112,6 @@ namespace Debryfin
             using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode) return null;
 
-            // CORREGIDO: ReadAsStringAsync() sin argumentos
             using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
             if (doc.RootElement.TryGetProperty("location", out var loc)) return loc.GetString();
             return null;

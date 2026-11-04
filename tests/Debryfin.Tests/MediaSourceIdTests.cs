@@ -44,8 +44,8 @@ namespace Debryfin.Tests
         [Fact]
         public void For_WithEmptyItemId_AndNullPath_DoesNotThrow()
         {
-            // Decisión: Tratar null como string vacío (path ?? string.Empty) en lugar de lanzar ArgumentNullException.
-            // Esto previene excepciones inesperadas si Emby pasa un BaseItem sin path o corrupto, generando un hash determinista.
+            // Decision: treat null as an empty string (path ?? string.Empty) instead of throwing ArgumentNullException.
+            // This prevents unexpected exceptions if Emby passes a BaseItem without a path or a corrupt one, yielding a deterministic hash.
             var result = MediaSourceId.For(Guid.Empty, null!);
 
             Assert.NotNull(result);

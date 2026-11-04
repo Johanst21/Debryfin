@@ -117,7 +117,7 @@ namespace Debryfin.Tests
             Assert.False(blocked.IsSuccess);
             Assert.True(resolver.NegativeCache.IsBlocked(LinkResolver.BuildKey(failing, url), now));
 
-            // El proveedor responde bien: la resolucion devolve la URL y limpia la caché negativa.
+            // The provider responds successfully: the resolution returns the URL and clears the negative cache.
             var ok = Substitute.For<IDebridProvider>();
             ok.Id.Returns(DebridProvider.RealDebrid);
             ok.UnrestrictAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())

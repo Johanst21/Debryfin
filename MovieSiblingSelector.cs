@@ -11,8 +11,8 @@ namespace Debryfin
         private static readonly Regex MovieRegex = new Regex(@"^(.*?)(?:\s\(?\d{4}\)?|\[|\()", RegexOptions.IgnoreCase);
 
         /// <summary>
-        /// Devuelve los paths de archivos .strm a procesar para el ítem de película actual.
-        /// Incluye el path actual y cualquier versión que comparta el prefijo de título.
+        /// Returns the paths of the .strm files to process for the current movie item.
+        /// Includes the current path and any version that shares the title prefix.
         /// </summary>
         public static IReadOnlyList<string> SelectFilesToProcess(
             string currentPath,
@@ -26,8 +26,8 @@ namespace Debryfin
             var currentFileNameWithoutExt = Path.GetFileNameWithoutExtension(currentPath);
             var baseName = ExtractBaseName(currentFileNameWithoutExt);
 
-            // Si baseName queda vacío tras la extracción por regex (p.ej. "(500) Days..." o "[4K]..."),
-            // se usa el nombre de fichero completo sin extensión para evitar StartsWith("") que seleccionaría todo.
+            // If baseName is empty after the regex extraction (e.g. "(500) Days..." or "[4K]..."),
+            // the full file name without extension is used to avoid StartsWith("") selecting everything.
             if (string.IsNullOrWhiteSpace(baseName))
             {
                 baseName = currentFileNameWithoutExt;
