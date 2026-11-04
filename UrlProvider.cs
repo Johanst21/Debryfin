@@ -67,14 +67,10 @@ namespace Debryfin
                 }
                 else
                 {
-                    var movieRegex = new Regex(@"^(.*?)(?:\s\(?\d{4}\)?|\[|\()", RegexOptions.IgnoreCase);
-                    var movieMatch = movieRegex.Match(Path.GetFileNameWithoutExtension(currentFileName));
-                    var baseName = movieMatch.Success ? movieMatch.Groups[1].Value.Trim() : Path.GetFileNameWithoutExtension(currentFileName);
+                    var strmCandidates = _fileSystem.GetFiles(directory, new[] { ".strm" }, false, false)
+                        .Select(f => f.FullName);
 
-                    filesToProcess = _fileSystem.GetFiles(directory, new[] { ".strm" }, false, false)
-                        .Select(f => f.FullName)
-                        .Where(p => Path.GetFileNameWithoutExtension(p).StartsWith(baseName, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
+                    filesToProcess = MovieSiblingSelector.SelectFilesToProcess(currentItemPath, strmCandidates).ToList();
                 }
 
                 // Actualizamos TODAS las versiones encontradas (Multithread)
