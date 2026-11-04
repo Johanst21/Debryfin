@@ -27,7 +27,7 @@ namespace Debryfin
             _logger.Info("Debryfin ha sido cargado correctamente.");
         }
 
-        public override Guid Id => Guid.Parse("3448308b-4818-471a-b3d2-a40107e8583a");
+        public override Guid Id => Guid.Parse("d090d156-79db-4784-b119-68c484750329");
         public override string Name => "Debryfin";
         public override string Description => "Desbloqueador universal de enlaces para Emby (Real-Debrid, TorBox, etc).";
 
