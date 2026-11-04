@@ -5,13 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.3.0.0] - Unreleased
+## [1.3.0.0] - 2026-11-04
+
+### Added
+- Emby 4.10+ compatibility (netstandard2.0, MediaBrowser.Server.Core 4.10.0.24-beta2).
 
 ### Fixed
-- (pendiente de rellenar al cerrar los P0)
+- Race condition that could overwrite `.strm.original` with the resolved URL, permanently losing the source link (P0-01).
+- Unstable MediaSource ID across process restarts caused by `GetHashCode()` (P0-02).
+- Mass resolution of all `.strm` files in a directory when the filename started with `(` or `[` (P0-06).
+- Plugin failing to load on Emby 4.10 due to `IMediaSourceProvider` signature change.
+- GUID collision with Chomyfin that caused Emby to display the wrong plugin UI.
 
 ### Changed
-- (pendiente de rellenar al cerrar los P0)
+- `Plugin.Configuration` is now null-safe to tolerate a known Emby 4.10 bug.
 
 ## [1.2.0.0] - 2026-11-04
 
