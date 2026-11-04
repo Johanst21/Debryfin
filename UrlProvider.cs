@@ -12,6 +12,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
+using Debryfin.Strm;
 
 namespace Debryfin
 {
@@ -19,6 +20,7 @@ namespace Debryfin
     {
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
+        private readonly StrmRefresher _strmRefresher;
 
         // Tiempo de expiración del enlace generado (72 horas)
         private static readonly TimeSpan LinkExpirationTime = TimeSpan.FromHours(72);
@@ -27,6 +29,11 @@ namespace Debryfin
         {
             _logger = logManager.GetLogger(GetType().Name);
             _fileSystem = fileSystem;
+            var strmStore = new EmbyStrmStore(fileSystem);
+            _strmRefresher = new StrmRefresher(
+                strmStore,
+                (url, ct) => Plugin.DebridServiceInstance.UnrestrictLinkAsync(url, ct),
+                (msg, ex, path) => _logger.ErrorException(msg, ex, path));
         }
 
         public async Task<List<MediaSourceInfo>> GetMediaSources(BaseItem item, CancellationToken cancellationToken)
@@ -101,42 +108,7 @@ namespace Debryfin
 
         private async Task ResolveAndCacheUrlAsync(string strmPath, CancellationToken ct)
         {
-            var originalStrmPath = strmPath + ".original";
-            string sourceUrl = null;
-
-            try
-            {
-                if (_fileSystem.FileExists(originalStrmPath))
-                {
-                    var lastModified = _fileSystem.GetLastWriteTimeUtc(strmPath);
-                    if (DateTime.UtcNow - lastModified < LinkExpirationTime) return;
-
-                    sourceUrl = await _fileSystem.ReadAllTextAsync(originalStrmPath).ConfigureAwait(false);
-                }
-                else
-                {
-                    var content = await _fileSystem.ReadAllTextAsync(strmPath).ConfigureAwait(false);
-                    if (string.IsNullOrWhiteSpace(content) || !content.Contains("http")) return;
-
-                    sourceUrl = content.Trim();
-                    await _fileSystem.WriteAllTextAsync(originalStrmPath, sourceUrl).ConfigureAwait(false);
-                }
-
-                if (!string.IsNullOrEmpty(sourceUrl))
-                {
-                    // _logger.Info("Debryfin: Actualizando {0}", Path.GetFileName(strmPath)); // Log reducido
-                    var directUrl = await Plugin.DebridServiceInstance.UnrestrictLinkAsync(sourceUrl.Trim(), ct).ConfigureAwait(false);
-
-                    if (!string.IsNullOrEmpty(directUrl))
-                    {
-                        await _fileSystem.WriteAllTextAsync(strmPath, directUrl).ConfigureAwait(false);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Debryfin: Error actualizando {0}", ex, strmPath);
-            }
+            await _strmRefresher.RefreshAsync(strmPath, ct).ConfigureAwait(false);
         }
 
         private List<MediaSourceInfo> BuildMediaSourceInfo(string directUrl, string sourcePath)
