@@ -15,3 +15,7 @@ Debryfin-*/
 diag/
 logs/
 *.Zone.Identifier
+
+# Internal agent docs (not published)
+AGENTS.md
+ANALYSIS.md
