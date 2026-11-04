@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Version>1.2.0.0</Version>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <FileVersion>1.2.0.0</FileVersion>
+    <PackageTags>plugin</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Si tienes una imagen llamada thumb.jpg ponla en la carpeta, si no, borra estas lineas -->
+    <None Remove="thumb.jpg" />
+    <EmbeddedResource Include="thumb.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediaBrowser.Server.Core" Version="4.9.*" />
+    <PackageReference Include="System.Memory" Version="4.5.5" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+  </ItemGroup>
+</Project>

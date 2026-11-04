@@ -1,0 +1,17 @@
+# Build results
+bin/
+obj/
+*.dll
+*.pdb
+
+# IDE / Editor files
+.vs/
+.idea/
+*.user
+*.suo
+
+# Release archives and legacy build artifacts
+Debryfin-*/
+diag/
+logs/
+*.Zone.Identifier
