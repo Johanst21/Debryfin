@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Debryfin.Configuration;
+using Debryfin.Providers;
 using MediaBrowser.Model.Logging;
 
 namespace Debryfin
@@ -14,12 +15,16 @@ namespace Debryfin
     {
         private readonly ILogger _logger;
         private readonly HttpClient _httpClient;
+        private readonly ProviderRegistry _registry;
 
         public DebridService(ILogger logger)
         {
             _logger = logger;
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Debryfin-Emby-Plugin/1.0");
+            _registry = new ProviderRegistry();
+            _registry.Register(new LegacyProviderAdapter(this, DebridProvider.RealDebrid));
+            _registry.Register(new LegacyProviderAdapter(this, DebridProvider.AllDebrid));
         }
 
         public async Task<string> UnrestrictLinkAsync(string sourceLink, CancellationToken ct)
@@ -32,21 +37,17 @@ namespace Debryfin
                 return null;
             }
 
+            var provider = _registry.Get(config.Provider);
+            if (provider == null)
+            {
+                _logger.Warn($"Debryfin[{config.Provider}]: proveedor no implementado.");
+                return null;
+            }
+
             try
             {
-                switch (config.Provider)
-                {
-                    case DebridProvider.RealDebrid:
-                        return await CallRealDebrid(sourceLink, config.ApiKey, ct);
-                    case DebridProvider.AllDebrid:
-                        return await CallAllDebrid(sourceLink, config.ApiKey, ct);
-                    case DebridProvider.TorBox:
-                        return await CallTorBox(sourceLink, config.ApiKey, ct);
-                    case DebridProvider.Premiumize:
-                        return await CallPremiumize(sourceLink, config.ApiKey, ct);
-                    default:
-                        return null;
-                }
+                var result = await provider.UnrestrictAsync(sourceLink, config.ApiKey, ct).ConfigureAwait(false);
+                return result.Error == ErrorKind.None ? result.Url : null;
             }
             catch (Exception ex)
             {
@@ -55,7 +56,7 @@ namespace Debryfin
             }
         }
 
-        private async Task<string> CallRealDebrid(string link, string token, CancellationToken ct)
+        internal async Task<string> CallRealDebrid(string link, string token, CancellationToken ct)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, "https://api.real-debrid.com/rest/1.0/unrestrict/link");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -70,7 +71,7 @@ namespace Debryfin
             return null;
         }
 
-        private async Task<string> CallAllDebrid(string link, string token, CancellationToken ct)
+        internal async Task<string> CallAllDebrid(string link, string token, CancellationToken ct)
         {
             var url = $"https://api.alldebrid.com/v4/link/unlock?agent=Debryfin&apikey={token}&link={Uri.EscapeDataString(link)}";
             using var response = await _httpClient.GetAsync(url, ct).ConfigureAwait(false);
