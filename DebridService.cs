@@ -37,10 +37,9 @@ namespace Debryfin
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _registry = new ProviderRegistry();
-            // P1-01: Real-Debrid now uses its native IDebridProvider; AllDebrid still
-            // goes through the legacy adapter until P1-02 migrates it.
+            // P1-01/P1-02: Real-Debrid and AllDebrid use their native IDebridProvider.
             _registry.Register(new RealDebridProvider(_httpClient));
-            _registry.Register(new LegacyProviderAdapter(this, DebridProvider.AllDebrid));
+            _registry.Register(new AllDebridProvider(_httpClient));
             _linkResolver = new Resolution.LinkResolver(() => DateTime.UtcNow);
         }
 
