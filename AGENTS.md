@@ -180,7 +180,7 @@ Referencias de línea según el código actual; si el fichero cambió, localiza 
   - Criterio de aceptación: build OK; RD y AD hacen **exactamente las mismas peticiones HTTP** que antes (test de caracterización mínimo con `HttpMessageHandler` falso que captura método/URL/cabeceras/cuerpo); tests de `ProviderRegistry` (registrar, obtener, duplicado, no registrado) y de `SecretRedactor`; sin estáticos nuevos.
   - Notas: la inyección de servicios propios en Emby es **a verificar en 4.10**; usa composición manual en `Plugin` (plan B ya aceptado). No cambies `DebryfinOptions`.
 
-- [ ] **P0-05 · Caché negativa + backoff ante fallos del proveedor**
+- [x] **P0-05 · Caché negativa + backoff ante fallos del proveedor**
   - Archivos: `Resolution/ILinkResolver.cs`, `LinkResolver.cs`, `ResolveOutcome.cs`, `ProviderPolicy.cs`, `NegativeCache.cs` (nuevos), `UrlProvider.cs`/`Strm/StrmRefresher.cs`, `DebridService.cs`
   - Depende de: P0-04 (y P0-01)
   - Criterio de aceptación:

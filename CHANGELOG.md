@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Emby 4.10+ compatibility (netstandard2.0, MediaBrowser.Server.Core 4.10.0.24-beta2).
+- Negative cache and exponential backoff to prevent provider rate-limits.
+- Request coalescing for concurrent .strm resolution.
 
 ### Fixed
 - Race condition that could overwrite `.strm.original` with the resolved URL, permanently losing the source link (P0-01).
