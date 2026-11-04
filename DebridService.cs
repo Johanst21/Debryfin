@@ -16,6 +16,10 @@ namespace Debryfin
         private readonly ILogger _logger;
         private readonly HttpClient _httpClient;
         private readonly ProviderRegistry _registry;
+        // P0-05: añade coalescing de peticiones simultaneas y backoff ante fallos.
+        // El reloj real (UtcNow) se inyecta aqui, en el punto de composicion;
+        // la logica de LinkResolver/NegativeCache lo recibe inyectado y es testeable.
+        private readonly Resolution.LinkResolver _linkResolver;
 
         public DebridService(ILogger logger)
         {
@@ -25,6 +29,7 @@ namespace Debryfin
             _registry = new ProviderRegistry();
             _registry.Register(new LegacyProviderAdapter(this, DebridProvider.RealDebrid));
             _registry.Register(new LegacyProviderAdapter(this, DebridProvider.AllDebrid));
+            _linkResolver = new Resolution.LinkResolver(() => DateTime.UtcNow);
         }
 
         public async Task<string> UnrestrictLinkAsync(string sourceLink, CancellationToken ct)
@@ -46,8 +51,11 @@ namespace Debryfin
 
             try
             {
-                var result = await provider.UnrestrictAsync(sourceLink, config.ApiKey, ct).ConfigureAwait(false);
-                return result.Error == ErrorKind.None ? result.Url : null;
+                // La resolucion pasa por LinkResolver (P0-05): aplica coalescing por
+                // (proveedor, url) y caché negativa con backoff. La firma publica
+                // (string, null en fallo) se mantiene.
+                var result = await _linkResolver.ResolveAsync(provider, sourceLink, config.ApiKey, ct).ConfigureAwait(false);
+                return result.IsSuccess ? result.Url : null;
             }
             catch (Exception ex)
             {
