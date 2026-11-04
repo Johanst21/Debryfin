@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - `Plugin.Configuration` is now null-safe to tolerate a known Emby 4.10 bug.
+- Abstracted Debrid providers into IDebridProvider + ProviderRegistry (P0-04).
 
 ## [1.2.0.0] - 2026-11-04
 

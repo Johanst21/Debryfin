@@ -160,7 +160,7 @@ Referencias de línea según el código actual; si el fichero cambió, localiza 
   - Criterio de aceptación: (a) compila en Release con 0 errores contra 4.10.0.24-beta2 en `netstandard2.0` **o** el ADR documenta qué falla y cuál es el plan B (volver a Core 4.9.1.90, que según la regla de carga sigue siendo cargable en hosts ≥ 4.9.1); (b) ADR con la decisión; (c) existe un test del helper de configuración segura; (d) el usuario confirma el humo en su Emby 4.10.x.
   - Notas: **no retargetear a `net6.0`/`net8.0`; no compilar contra 4.11.x.** Mínimo soportado resultante = versión del SDK usado (4.10.0.24).
 
-- [ ] **P0-04 · Abstracción `IDebridProvider` sin romper Real-Debrid ni AllDebrid**
+- [x] **P0-04 · Abstracción `IDebridProvider` sin romper Real-Debrid ni AllDebrid**
   - Archivos: `Providers/IDebridProvider.cs`, `DebridProviderBase.cs`, `ProviderRegistry.cs`, `LegacyProviderAdapter.cs` (nuevos), `Http/DebridHttp.cs`, `Http/SecretRedactor.cs` (nuevos), `DebridService.cs`, `Plugin.cs`
   - Depende de: P0-03
   - Contrato (implementar tal cual):
