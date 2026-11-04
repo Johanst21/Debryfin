@@ -24,7 +24,7 @@ namespace Debryfin
 
         public async Task<string> UnrestrictLinkAsync(string sourceLink, CancellationToken ct)
         {
-            var config = Plugin.Instance?.Configuration;
+            var config = Plugin.Instance?.SafeGetOptions();
             
             if (config == null || string.IsNullOrEmpty(config.ApiKey))
             {

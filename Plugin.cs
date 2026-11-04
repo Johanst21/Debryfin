@@ -31,7 +31,18 @@ namespace Debryfin
         public override string Name => "Debryfin";
         public override string Description => "Desbloqueador universal de enlaces para Emby (Real-Debrid, TorBox, etc).";
 
-        public DebryfinOptions Configuration => GetOptions();
+        private DebryfinOptions _cachedOptions;
+        internal DebryfinOptions SafeGetOptions()
+        {
+            try { return GetOptions() ?? (_cachedOptions ??= new DebryfinOptions()); }
+            catch (Exception ex)
+            {
+                _logger?.ErrorException("Debryfin: error reading configuration, using defaults", ex);
+                return _cachedOptions ??= new DebryfinOptions();
+            }
+        }
+
+        public DebryfinOptions Configuration => SafeGetOptions();
 
         public ImageFormat ThumbImageFormat => ImageFormat.Jpg;
 
