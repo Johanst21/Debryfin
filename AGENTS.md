@@ -190,7 +190,7 @@ Referencias de línea según el código actual; si el fichero cambió, localiza 
     4. El log por fallo incluye proveedor, `ErrorKind`, mensaje sin secretos; "falta API key" se registra como `Warn`, como máximo una vez por minuto.
   - Notas: RD/AD siguen devolviendo `Transient` genérico hasta P1-01/02 (el adapter no distingue causas). Reloj: `Func<DateTime>` inyectable. Valores por defecto en constantes; configurables en P1-07/P2-03.
 
-- [ ] **P0-06 · Evitar resolución masiva por `baseName` vacío (añadida)**
+- [x] **P0-06 · Evitar resolución masiva por `baseName` vacío (añadida)**
   - Archivos: `UrlProvider.cs` (bloque de película, líneas ~63-71), tests
   - Depende de: —  (recomendado ejecutarla justo después de P0-02)
   - Problema: el patrón `^(.*?)(?:\s\(?\d{4}\)?|\[|\()` produce grupo vacío con nombres que empiezan por `(` o `[` (`(500) Days of Summer (2009).strm`, `[4K] Peli.strm`); `StartsWith("")` es verdadero para todos ⇒ se intentan resolver **todos** los `.strm` del directorio.
