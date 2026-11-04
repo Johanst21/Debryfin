@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Migrated Real-Debrid logic to a native provider (`Providers/RealDebridProvider.cs`).
 - Migrated AllDebrid logic to a native provider (`Providers/AllDebridProvider.cs`); success without a link is now reported as `Pending` so the resolver retries with the pending backoff.
 
+### Security
+- AllDebrid API key moved from URL query to Authorization Bearer header (P1-03).
+
 ## [1.3.0.0] - 2026-11-04
 
 ### Added
