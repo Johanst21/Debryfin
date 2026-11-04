@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 - AllDebrid API key moved from URL query to Authorization Bearer header (P1-03).
+- Added SecretRedactor to prevent API keys from leaking into logs.
 
 ## [1.3.0.0] - 2026-11-04
 
