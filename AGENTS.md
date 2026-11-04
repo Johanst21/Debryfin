@@ -211,7 +211,7 @@ Referencias de línea según el código actual; si el fichero cambió, localiza 
   - Criterio de aceptación: test de caracterización previo: `GET https://api.alldebrid.com/v4/link/unlock?agent=Debryfin&apikey=<key>&link=<link escapado>`, éxito = `data.link`. Mover a `AllDebridProvider` con el test en verde. Errores: respuesta `status:"error"` → leer `error.code`/`error.message` (códigos exactos **a verificar** en https://docs.alldebrid.com); mapeo provisional: `AUTH_*` → AuthFailed, `LINK_HOST_NOT_SUPPORTED` → Unsupported, `LINK_DOWN` → NotFound, resto → Transient; respuesta "delayed" (sin `link`) → Pending.
   - Notas: **mantener método GET y `apikey=` en esta tarea**; el cambio a Bearer es P1-03 (PR separado, reversible).
 
-- [ ] **P1-03 · AllDebrid: API key en cabecera `Authorization: Bearer`**
+- [x] **P1-03 · AllDebrid: API key en cabecera `Authorization: Bearer`**
   - Archivos: `Providers/AllDebridProvider.cs`, tests
   - Depende de: P1-02
   - Criterio de aceptación: la petición lleva `Authorization: Bearer <key>` y la URL **no contiene `apikey=`** (test que lo verifica); `agent=Debryfin` se mantiene; método **GET conservado** (la documentación de AD lista `link/unlock` también como POST; migrar a POST es opcional y fuera de esta tarea).
