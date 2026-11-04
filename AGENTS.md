@@ -205,7 +205,7 @@ Referencias de línea según el código actual; si el fichero cambió, localiza 
   - Criterio de aceptación: **primero** test de caracterización del comportamiento actual: `POST https://api.real-debrid.com/rest/1.0/unrestrict/link`, cabecera `Authorization: Bearer <key>`, cuerpo `application/x-www-form-urlencoded` con `link`, éxito = campo `download`. **Después** mover el cuerpo a `RealDebridProvider` y que el mismo test siga verde. Clasificación de errores nueva: 401/403 → AuthFailed; 429 → RateLimited (respetar `Retry-After`); 5xx/timeout/red → Transient; respuesta correcta sin `download` → Permanent; mensaje de error de RD en el log (campo `error` del JSON: **a verificar** en https://api.real-debrid.com). Lectura con `ParseAsync(stream, ct)`.
   - Notas: **no cambiar** URL, cabeceras ni cuerpo de la petición. Retirar el registro del adapter de RD solo cuando el test de caracterización pase.
 
-- [ ] **P1-02 · Migrar AllDebrid a la nueva abstracción (mantener comportamiento)**
+- [x] **P1-02 · Migrar AllDebrid a la nueva abstracción (mantener comportamiento)**
   - Archivos: `Providers/AllDebridProvider.cs` (nuevo), `LegacyProviderAdapter.cs`, `DebridService.cs`, tests
   - Depende de: P0-04, P0-05
   - Criterio de aceptación: test de caracterización previo: `GET https://api.alldebrid.com/v4/link/unlock?agent=Debryfin&apikey=<key>&link=<link escapado>`, éxito = `data.link`. Mover a `AllDebridProvider` con el test en verde. Errores: respuesta `status:"error"` → leer `error.code`/`error.message` (códigos exactos **a verificar** en https://docs.alldebrid.com); mapeo provisional: `AUTH_*` → AuthFailed, `LINK_HOST_NOT_SUPPORTED` → Unsupported, `LINK_DOWN` → NotFound, resto → Transient; respuesta "delayed" (sin `link`) → Pending.

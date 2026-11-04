@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Translated all plugin UI strings, logs and comments to English.
 - Migrated Real-Debrid logic to a native provider (`Providers/RealDebridProvider.cs`).
+- Migrated AllDebrid logic to a native provider (`Providers/AllDebridProvider.cs`); success without a link is now reported as `Pending` so the resolver retries with the pending backoff.
 
 ## [1.3.0.0] - 2026-11-04
 
