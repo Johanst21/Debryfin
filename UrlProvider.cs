@@ -103,7 +103,7 @@ namespace Debryfin
             }
 
             // Construimos la info con ID y Nombre para evitar líneas vacías
-            return BuildMediaSourceInfo(finalUrl, currentItemPath);
+            return BuildMediaSourceInfo(finalUrl, currentItemPath, item);
         }
 
         private async Task ResolveAndCacheUrlAsync(string strmPath, CancellationToken ct)
@@ -111,16 +111,15 @@ namespace Debryfin
             await _strmRefresher.RefreshAsync(strmPath, ct).ConfigureAwait(false);
         }
 
-        private List<MediaSourceInfo> BuildMediaSourceInfo(string directUrl, string sourcePath)
+        private List<MediaSourceInfo> BuildMediaSourceInfo(string directUrl, string sourcePath, BaseItem item)
         {
             var config = Plugin.Instance.Configuration;
             
             // Generar un nombre limpio basado en el archivo (ej: "Peli [4K]" -> "4K")
             var name = Path.GetFileNameWithoutExtension(sourcePath);
             
-            // Generar un ID único basado en la ruta. 
-            // ESTO ES CLAVE: Al darle el mismo ID que el path, Emby sabe que es el mismo archivo y no lo duplica.
-            var id = sourcePath.ToLowerInvariant().GetHashCode().ToString();
+            // Stable across process restarts (item GUID or SHA1 of path).
+            var id = MediaSourceId.For(item != null ? item.Id : Guid.Empty, sourcePath);
 
             var info = new MediaSourceInfo
             {
