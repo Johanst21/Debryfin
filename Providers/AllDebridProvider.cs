@@ -2,15 +2,15 @@ namespace Debryfin.Providers
 {
     using System;
     using System.Net.Http;
+    using System.Net.Http.Headers;
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using Debryfin.Configuration;
 
-    // P1-02: native AllDebrid implementation of IDebridProvider.
-    // The unrestrict request is byte-for-byte identical to the legacy DebridService.CallAllDebrid
-    // (GET with agent/apikey/link in the query string); P1-03 will move the key to an
-    // Authorization header in a separate, reversible change.
+    // P1-02/P1-03: native AllDebrid implementation of IDebridProvider.
+    // The unrestrict request is a GET with agent/link in the query string and the API key
+    // in the Authorization: Bearer header (the key never appears in the URL).
     public sealed class AllDebridProvider : IDebridProvider
     {
         private const string UnrestrictEndpoint = "https://api.alldebrid.com/v4/link/unlock";
@@ -32,13 +32,15 @@ namespace Debryfin.Providers
 
         public async Task<UnrestrictResult> UnrestrictAsync(string sourceLink, string apiKey, CancellationToken ct)
         {
-            // Identical request to the legacy CallAllDebrid: GET with agent/apikey/link.
-            var url = $"{UnrestrictEndpoint}?agent={Agent}&apikey={apiKey}&link={Uri.EscapeDataString(sourceLink)}";
+            // GET with agent/link in the query string; the API key goes in the Bearer header.
+            var request = new HttpRequestMessage(HttpMethod.Get,
+                $"{UnrestrictEndpoint}?agent={Agent}&link={Uri.EscapeDataString(sourceLink)}");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
             HttpResponseMessage response;
             try
             {
-                response = await _httpClient.GetAsync(url, ct).ConfigureAwait(false);
+                response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -91,12 +93,13 @@ namespace Debryfin.Providers
 
         public async Task<AccountInfo> GetUserInfoAsync(string apiKey, CancellationToken ct)
         {
-            var url = $"{UserEndpoint}?agent={Agent}&apikey={apiKey}";
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{UserEndpoint}?agent={Agent}");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
             HttpResponseMessage response;
             try
             {
-                response = await _httpClient.GetAsync(url, ct).ConfigureAwait(false);
+                response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {

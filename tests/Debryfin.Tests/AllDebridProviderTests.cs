@@ -11,10 +11,11 @@ using Xunit;
 
 namespace Debryfin.Tests
 {
-    // P1-02 tests. The first block characterizes the legacy DebridService.CallAllDebrid
-    // (method, URL, query) and the second drives the native IDebridProvider through the same
-    // assertion helper, proving both send an identical request. No real network is used:
-    // every request goes through the CapturingHandler fake (shared with the Real-Debrid tests).
+    // P1-02/P1-03 tests. The first block characterizes the legacy DebridService.CallAllDebrid
+    // (method, URL, query with apikey). The second drives the native IDebridProvider: after
+    // P1-03 the method, agent and link stay the same, but the API key moves from the query
+    // string to the Authorization: Bearer header. No real network is used: every request goes
+    // through the CapturingHandler fake (shared with the Real-Debrid tests).
     public class AllDebridProviderTests
     {
         private const string UnrestrictBaseUrl = "https://api.alldebrid.com/v4/link/unlock";
@@ -36,7 +37,7 @@ namespace Debryfin.Tests
 
             var result = await service.CallAllDebrid(SourceLink, ApiKey, CancellationToken.None);
 
-            AssertUnrestrictRequest(handler);
+            AssertLegacyUnrestrictRequest(handler);
             Assert.Equal(DirectUrl, result);
         }
 
@@ -64,10 +65,10 @@ namespace Debryfin.Tests
             Assert.Null(result);
         }
 
-        // --- Native provider: the wire request must be identical to the legacy one ---
+        // --- Native provider: same method/agent/link as the legacy request, key in the Bearer header ---
 
         [Fact]
-        public async Task Unrestrict_SendsIdenticalRequest_ReturnsDirectUrl()
+        public async Task Unrestrict_KeepsGetAndAgent_UsesBearerHeader_ReturnsDirectUrl()
         {
             var handler = new CapturingHandler(HttpStatusCode.OK, SuccessJson());
             using var client = new HttpClient(handler);
@@ -75,7 +76,7 @@ namespace Debryfin.Tests
 
             var result = await provider.UnrestrictAsync(SourceLink, ApiKey, CancellationToken.None);
 
-            AssertUnrestrictRequest(handler);
+            AssertNativeUnrestrictRequest(handler);
             Assert.Equal(ErrorKind.None, result.Error);
             Assert.Equal(DirectUrl, result.Url);
         }
@@ -191,9 +192,9 @@ namespace Debryfin.Tests
             var request = handler.Request;
             Assert.NotNull(request);
             Assert.Equal(HttpMethod.Get, request!.Method);
-            Assert.Equal(
-                $"{UserBaseUrl}?agent=Debryfin&apikey={ApiKey}",
-                request!.RequestUri!.ToString());
+            Assert.Equal($"{UserBaseUrl}?agent=Debryfin", request!.RequestUri!.ToString());
+            AssertBearerHeader(request, ApiKey);
+            Assert.DoesNotContain("apikey=", request!.RequestUri!.ToString());
             Assert.Equal("aduser", info.Username);
             Assert.True(info.IsPremium);
         }
@@ -267,9 +268,8 @@ namespace Debryfin.Tests
 
         // --- Helpers ---
 
-        // Shared by the legacy characterization and the native provider tests: the on-wire
-        // request must be exactly this GET with agent/apikey/link in the query string.
-        private static void AssertUnrestrictRequest(CapturingHandler handler)
+        // Pins the legacy on-wire request: GET with agent/apikey/link in the query string.
+        private static void AssertLegacyUnrestrictRequest(CapturingHandler handler)
         {
             var request = handler.Request;
             Assert.NotNull(request);
@@ -278,6 +278,26 @@ namespace Debryfin.Tests
                 $"{UnrestrictBaseUrl}?agent=Debryfin&apikey={ApiKey}&link={Uri.EscapeDataString(SourceLink)}",
                 request!.RequestUri!.ToString());
             Assert.Null(request!.Content);
+        }
+
+        // Pins the native on-wire request after P1-03: the same GET with agent/link in the
+        // query string, but the API key is absent from the URL and sent as a Bearer header.
+        private static void AssertNativeUnrestrictRequest(CapturingHandler handler)
+        {
+            var request = handler.Request;
+            Assert.NotNull(request);
+            Assert.Equal(HttpMethod.Get, request!.Method);
+            var url = request!.RequestUri!.ToString();
+            Assert.Equal($"{UnrestrictBaseUrl}?agent=Debryfin&link={Uri.EscapeDataString(SourceLink)}", url);
+            Assert.DoesNotContain("apikey=", url);
+            AssertBearerHeader(request, ApiKey);
+            Assert.Null(request!.Content);
+        }
+
+        private static void AssertBearerHeader(HttpRequestMessage request, string key)
+        {
+            Assert.Equal("Bearer", request.Headers.Authorization?.Scheme);
+            Assert.Equal(key, request.Headers.Authorization?.Parameter);
         }
 
         private static string SuccessJson()
