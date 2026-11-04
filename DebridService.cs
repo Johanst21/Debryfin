@@ -21,15 +21,34 @@ namespace Debryfin
         // the LinkResolver/NegativeCache logic receives it injected and is testable.
         private readonly Resolution.LinkResolver _linkResolver;
 
+        // Test seam (InternalsVisibleTo "Debryfin.Tests"): exposes the composition point so
+        // tests can verify which provider is wired for each DebridProvider id.
+        internal ProviderRegistry Registry => _registry;
+
         public DebridService(ILogger logger)
+            : this(logger, CreateDefaultHttpClient())
         {
-            _logger = logger;
-            _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Debryfin-Emby-Plugin/1.0");
+        }
+
+        // Test seam (InternalsVisibleTo "Debryfin.Tests"): allows injecting a fake
+        // HttpClient so provider requests can be characterized without any network.
+        internal DebridService(ILogger logger, HttpClient httpClient)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _registry = new ProviderRegistry();
-            _registry.Register(new LegacyProviderAdapter(this, DebridProvider.RealDebrid));
+            // P1-01: Real-Debrid now uses its native IDebridProvider; AllDebrid still
+            // goes through the legacy adapter until P1-02 migrates it.
+            _registry.Register(new RealDebridProvider(_httpClient));
             _registry.Register(new LegacyProviderAdapter(this, DebridProvider.AllDebrid));
             _linkResolver = new Resolution.LinkResolver(() => DateTime.UtcNow);
+        }
+
+        private static HttpClient CreateDefaultHttpClient()
+        {
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("Debryfin-Emby-Plugin/1.0");
+            return client;
         }
 
         public async Task<string> UnrestrictLinkAsync(string sourceLink, CancellationToken ct)
