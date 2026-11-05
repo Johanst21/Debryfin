@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.5.0] - 2026-11-04
+
+### Changed
+- Pre-release testing version for Emby 4.10+.
+- Includes all P0 architectural fixes (P0-01 to P0-06).
+- Includes native provider migrations for Real-Debrid and AllDebrid, plus security enhancements.
+
 ## [1.4.0.0] - 2026-11-04
 
 ### Added
@@ -48,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cache of resolved URLs with automatic refresh on expiry.
 - Plugin settings UI for API keys and provider selection.
 
+[1.4.5.0]: https://github.com/Johanst21/Debryfin/compare/v1.4.0.0...v1.4.5.0
 [1.4.0.0]: https://github.com/Johanst21/Debryfin/compare/v1.3.0.0...v1.4.0.0
 [1.3.0.0]: https://github.com/Johanst21/Debryfin/compare/v1.2.0.0...v1.3.0.0
 [1.2.0.0]: https://github.com/Johanst21/Debryfin/releases/tag/v1.2.0.0
