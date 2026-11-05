@@ -37,10 +37,12 @@ namespace Debryfin
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _registry = new ProviderRegistry();
-            // P1-01/P1-02/P1-05: Real-Debrid, AllDebrid and TorBox use their native IDebridProvider.
+            // P1-01/P1-02/P1-05/P1-06: Real-Debrid, AllDebrid, TorBox and Premiumize use
+            // their native IDebridProvider.
             _registry.Register(new RealDebridProvider(_httpClient));
             _registry.Register(new AllDebridProvider(_httpClient));
             _registry.Register(new TorBoxProvider(_httpClient));
+            _registry.Register(new PremiumizeProvider(_httpClient));
             _linkResolver = new Resolution.LinkResolver(() => DateTime.UtcNow);
         }
 
@@ -106,18 +108,6 @@ namespace Debryfin
             using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
             if (doc.RootElement.TryGetProperty("data", out var data) &&
                 data.TryGetProperty("link", out var dlLink)) return dlLink.GetString();
-            return null;
-        }
-
-        private async Task<string> CallPremiumize(string link, string token, CancellationToken ct)
-        {
-            var url = $"https://www.premiumize.me/api/transfer/directdl?apikey={token}&src={Uri.EscapeDataString(link)}";
-            var request = new HttpRequestMessage(HttpMethod.Post, url);
-            using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode) return null;
-
-            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-            if (doc.RootElement.TryGetProperty("location", out var loc)) return loc.GetString();
             return null;
         }
     }
