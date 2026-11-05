@@ -223,7 +223,7 @@ Referencias de línea según el código actual; si el fichero cambió, localiza 
   - Criterio de aceptación: tests que recorren las peticiones capturadas de todos los proveedores migrados y fallan si la URL contiene `apikey=` o `token=` (lista blanca: TorBox `requestdl`); tests del `SecretRedactor` (cadenas con `apikey=`, `token=`, `Authorization: Bearer`); verificación de que ninguna excepción registrada contiene la key.
   - Notas: RD ya usa Bearer (`DebridService.cs:61`); esta tarea solo añade protección de regresión.
 
-- [ ] **P1-05 · Implementar TorBox con el flujo correcto (`createwebdownload` + `requestdl`)**
+- [x] **P1-05 · Implementar TorBox con el flujo correcto (`createwebdownload` + `requestdl`)**
   - Archivos: `Providers/TorBoxProvider.cs` (nuevo), `DebridService.cs` (eliminar el stub roto `CallTorBox`), `Plugin.cs` (registro), tests
   - Depende de: P0-05, P1-04
   - **No usar `/v1/api/link/unrestrict`** (no figura en la documentación ni en los SDK oficiales).

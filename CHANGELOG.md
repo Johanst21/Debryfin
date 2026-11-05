@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.4.5.0] - 2026-11-04
 
+### Added
+- Native TorBox provider support (P1-05).
+
 ### Changed
 - Pre-release testing version for Emby 4.10+.
 - Includes all P0 architectural fixes (P0-01 to P0-06).
