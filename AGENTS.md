@@ -234,7 +234,7 @@ Referencias de línea según el código actual; si el fichero cambió, localiza 
   - Criterio de aceptación: tests con `HttpMessageHandler` falso: éxito en caché, éxito tras espera, Pending por tiempo, 401 → AuthFailed, 429 → RateLimited, error de red → Transient; la key **no aparece** en ningún log (test con el redactor); `DefaultLinkTtl` = **2 h** (enlace abierto ~3 h según los SDK; **a verificar**).
   - Notas: el enlace de TorBox caduca en horas: el TTL por proveedor (P0-05) debe aplicarse; con TorBox el `.strm` se reescribirá más a menudo (ver P1-11).
 
-- [ ] **P1-06 · Implementar Premiumize con `Authorization: Bearer`**
+- [x] **P1-06 · Implementar Premiumize con `Authorization: Bearer`**
   - Archivos: `Providers/PremiumizeProvider.cs` (nuevo), `DebridService.cs` (eliminar el stub `CallPremiumize`), `Plugin.cs`, tests
   - Depende de: P0-05, P1-04
   - Especificación verificada en https://www.premiumize.me/api:
