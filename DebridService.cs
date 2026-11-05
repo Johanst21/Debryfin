@@ -37,9 +37,10 @@ namespace Debryfin
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _registry = new ProviderRegistry();
-            // P1-01/P1-02: Real-Debrid and AllDebrid use their native IDebridProvider.
+            // P1-01/P1-02/P1-05: Real-Debrid, AllDebrid and TorBox use their native IDebridProvider.
             _registry.Register(new RealDebridProvider(_httpClient));
             _registry.Register(new AllDebridProvider(_httpClient));
+            _registry.Register(new TorBoxProvider(_httpClient));
             _linkResolver = new Resolution.LinkResolver(() => DateTime.UtcNow);
         }
 
@@ -100,21 +101,6 @@ namespace Debryfin
         {
             var url = $"https://api.alldebrid.com/v4/link/unlock?agent=Debryfin&apikey={token}&link={Uri.EscapeDataString(link)}";
             using var response = await _httpClient.GetAsync(url, ct).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode) return null;
-
-            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-            if (doc.RootElement.TryGetProperty("data", out var data) &&
-                data.TryGetProperty("link", out var dlLink)) return dlLink.GetString();
-            return null;
-        }
-
-        private async Task<string> CallTorBox(string link, string token, CancellationToken ct)
-        {
-            var request = new HttpRequestMessage(HttpMethod.Post, "https://api.torbox.app/v1/api/link/unrestrict");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            request.Content = new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("link", link) });
-
-            using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode) return null;
 
             using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());

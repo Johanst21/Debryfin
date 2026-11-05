@@ -12,8 +12,9 @@ namespace Debryfin.Tests
     // send the API key in the Authorization: Bearer header; if a future refactor moves
     // the key back into the request URI (apikey=... / token=...), these tests must fail.
     // The TorBox requestdl "token=" query parameter (P1-05) is the only sanctioned
-    // exception and is whitelisted when it lands. No real network: the shared
-    // CapturingHandler/ThrowingHandler fakes record the request and reply offline.
+    // exception; it is covered by the dedicated TorBox test below. No real network:
+    // the shared CapturingHandler/ScriptedHandler/ThrowingHandler fakes record the
+    // request(s) and reply offline.
     public class NoSecretsInUrlTests
     {
         private const string SourceLink = "https://1fichier.com/?abc123";
@@ -69,6 +70,42 @@ namespace Debryfin.Tests
 
             Assert.Equal(ErrorKind.Transient, result.Error);
             Assert.DoesNotContain(ApiKey, result.Message);
+        }
+
+        [Fact]
+        public async Task TorBox_Unrestrict_OnlyRequestdlIsWhitelistedForTokenInUrl()
+        {
+            var createSuccess =
+                "{\"success\":true,\"data\":{\"auth_id\":\"1\",\"hash\":\"abc\",\"webdownload_id\":\"wb-1\"},\"detail\":null,\"error\":null}";
+            var requestdlSuccess = $"{{\"success\":true,\"data\":\"{DirectUrl}\",\"detail\":null,\"error\":null}}";
+            var handler = new ScriptedHandler((index, _) =>
+                new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(index == 0 ? createSuccess : requestdlSuccess)
+                });
+            using var client = new HttpClient(handler);
+            var provider = new TorBoxProvider(client);
+
+            var result = await provider.UnrestrictAsync(SourceLink, ApiKey, CancellationToken.None);
+
+            Assert.Equal(ErrorKind.None, result.Error);
+            Assert.Equal(2, handler.Requests.Count);
+
+            // Step 1 (createwebdownload): the key travels in the Bearer header, not the URL.
+            var create = handler.Requests[0];
+            var createUrl = create.RequestUri!.ToString().ToLowerInvariant();
+            Assert.DoesNotContain("apikey=", createUrl);
+            Assert.DoesNotContain("token=", createUrl);
+            Assert.Equal("Bearer", create.Headers.Authorization?.Scheme);
+            Assert.Equal(ApiKey, create.Headers.Authorization?.Parameter);
+
+            // Step 2 (requestdl): token=<key> is the only sanctioned credential-in-URL
+            // exception (the API has no header auth for this endpoint); apikey= stays
+            // forbidden in every request.
+            var requestdl = handler.Requests[1];
+            var requestdlUrl = requestdl.RequestUri!.ToString();
+            Assert.Contains($"token={Uri.EscapeDataString(ApiKey)}", requestdlUrl);
+            Assert.DoesNotContain("apikey=", requestdlUrl.ToLowerInvariant());
         }
 
         // --- Helpers ---
