@@ -6,23 +6,23 @@
 
 <p align="center">
   <a href="https://www.gnu.org/licenses/gpl-3.0"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3"></a>
-  <a href="https://github.com/Johanst21/Debryfin/releases/tag/v1.4.5.0"><img src="https://img.shields.io/badge/Release-v1.4.5.0-green.svg" alt="Release v1.4.5.0"></a>
+  <a href="https://github.com/Johanst21/Debryfin/releases/tag/v1.5.0.0"><img src="https://img.shields.io/badge/Release-v1.5.0.0-green.svg" alt="Release v1.5.0.0"></a>
 </p>
 
-Emby server plugin that resolves .strm links to direct URLs via Debrid providers (Real-Debrid and AllDebrid). More providers coming.
+Emby server plugin that resolves .strm links to direct URLs via Debrid providers (Real-Debrid, AllDebrid, TorBox and Premiumize).
 
-**Status:** Version `v1.4.5.0`.
+**Status:** Version `v1.5.0.0`.
 
 ## Features
 * **Debrid Resolution:** Resolves `.strm` links to direct, high-speed playback URLs using Debrid providers.
-* **Supported Providers:** Full support for Real-Debrid and AllDebrid.
+* **Supported Providers:** Full support for Real-Debrid, AllDebrid, TorBox and Premiumize.
 * **URL Caching:** Built-in caching of resolved streaming URLs to reduce API requests and latency.
 * **Automatic Refresh:** Automatically refreshes stream links when expired.
 * **Configurable Credentials:** Plugin settings UI allowing easy configuration of per-provider API keys and options.
 
 ## Requirements
 * **Emby Server:** Requires Emby Server 4.10 or newer. For Emby 4.9, use release v1.2.0.0.
-* **Debrid Account:** Active Real-Debrid or AllDebrid account with an API key/token.
+* **Debrid Account:** Active Real-Debrid, AllDebrid, TorBox or Premiumize account with an API key/token.
 * **.NET SDK:** 8.0 or higher (for compilation).
 * **Target Framework:** `netstandard2.0`.
 
