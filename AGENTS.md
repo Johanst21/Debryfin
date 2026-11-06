@@ -245,7 +245,7 @@ Referencias de línea según el código actual; si el fichero cambió, localiza 
   - Criterio de aceptación: tests por cada código de error del mapeo + éxito + varios elementos en `content`; la URL de la petición **no contiene** la key; `DefaultLinkTtl` por defecto 12 h (**a verificar**).
   - Notas: el campo `location` que usa el stub actual está deprecado: no reutilizar el código antiguo.
 
-- [ ] **P1-07 · Settings por proveedor + validación de API key**
+- [x] **P1-07 · Settings por proveedor + validación de API key**
   - Archivos: `DebryfinOptions.cs`, `Configuration/ProviderKeyResolver.cs` (nuevo), `Providers/*` (`GetUserInfoAsync`/`ValidateApiKeyAsync`), `Plugin.cs`, tests
   - Depende de: P1-01, P1-02, P1-05, P1-06
   - **Pre-aprobado (solo aditivo)**: añadir `RealDebridApiKey`, `AllDebridApiKey`, `TorBoxApiKey`, `PremiumizeApiKey` (`[IsPassword]`), `EnableFallback` (bool, `false`), `LinkTtlHours` (int, `0` = automático), `NegativeCacheMinutes`, `RequestTimeoutSeconds`, `MaxConcurrentRequests` (con valores por defecto conservadores). **No tocar** `Provider`, `ApiKey`, `UseProxyMode` ni el orden/valores del enum (un proveedor nuevo se añade al final).

@@ -38,6 +38,27 @@ namespace Debryfin.Configuration
         [IsPassword] // Masks the value with asterisks *****
         public string ApiKey { get; set; }
 
+        // PER-PROVIDER API KEYS
+        [DisplayName("Real-Debrid API Key")]
+        [Description("Private API key for Real-Debrid.")]
+        [IsPassword]
+        public string RealDebridApiKey { get; set; }
+
+        [DisplayName("AllDebrid API Key")]
+        [Description("Private API key for AllDebrid.")]
+        [IsPassword]
+        public string AllDebridApiKey { get; set; }
+
+        [DisplayName("TorBox API Key")]
+        [Description("Private API key for TorBox.")]
+        [IsPassword]
+        public string TorBoxApiKey { get; set; }
+
+        [DisplayName("Premiumize API Key")]
+        [Description("Private API key for Premiumize.")]
+        [IsPassword]
+        public string PremiumizeApiKey { get; set; }
+
         // PROXY CHECKBOX
         [DisplayName("Enable Proxy Mode (Anti-Ban)")]
         [Description("ENABLED: The server downloads the video (Safe to share, uses CPU/Network). DISABLED: Direct Play (Fast, risk of ban if there are multiple IPs).")]
