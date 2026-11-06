@@ -17,7 +17,7 @@ namespace Debryfin.Configuration
     {
         public DebryfinOptions()
         {
-            Provider = DebridProvider.RealDebrid;
+            EnableFallback = true;
             UseProxyMode = false;
         }
 
@@ -25,18 +25,7 @@ namespace Debryfin.Configuration
         public override string EditorTitle => "Debryfin Settings";
 
         [JsonIgnore]
-        public override string EditorDescription => "Configure your Debrid service provider to unlock 1fichier links in .strm files.";
-
-        // PROVIDER DROPDOWN LIST
-        [DisplayName("Debrid Provider")]
-        [Description("Select the service you have subscribed to.")]
-        public DebridProvider Provider { get; set; }
-
-        // API KEY FIELD
-        [DisplayName("API Key / Token")]
-        [Description("Paste your private API Key for the selected service here.")]
-        [IsPassword] // Masks the value with asterisks *****
-        public string ApiKey { get; set; }
+        public override string EditorDescription => "Configure your Debrid service providers to unlock supported hoster links in .strm files.";
 
         // PER-PROVIDER API KEYS
         [DisplayName("Real-Debrid API Key")]
@@ -58,6 +47,11 @@ namespace Debryfin.Configuration
         [Description("Private API key for Premiumize.")]
         [IsPassword]
         public string PremiumizeApiKey { get; set; }
+
+        // FALLBACK SETTING
+        [DisplayName("Enable Provider Fallback")]
+        [Description("When enabled, if the first configured provider fails to resolve a link, Debryfin will automatically try the next configured provider.")]
+        public bool EnableFallback { get; set; } = true;
 
         // PROXY CHECKBOX
         [DisplayName("Enable Proxy Mode (Anti-Ban)")]
