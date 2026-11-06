@@ -9,7 +9,7 @@
   <a href="https://github.com/Johanst21/Debryfin/releases/tag/v1.6.0.0"><img src="https://img.shields.io/badge/Release-v1.6.0.0-green.svg" alt="Release v1.6.0.0"></a>
 </p>
 
-Emby server plugin that resolves .strm links to direct URLs via Debrid providers (Real-Debrid, AllDebrid, TorBox and Premiumize).
+Emby Server plugin that resolves .strm links to direct streaming URLs using Real-Debrid, AllDebrid, TorBox, and Premiumize with automatic fallback.
 
 **Status:** Version `v1.6.0.0`.
 
