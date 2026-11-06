@@ -10,7 +10,7 @@ namespace Debryfin.Resolution
     //  - coalescing: simultaneous calls for the same key share a single request;
     //  - negative cache: after a failure the request is not repeated during the backoff window.
     // The clock is injected (Func<DateTime>) to test the backoff without real waits.
-    public sealed class LinkResolver
+    public sealed class LinkResolver : ILinkResolver
     {
         private readonly NegativeCache _negativeCache = new NegativeCache();
         private readonly Func<DateTime> _getUtcNow;

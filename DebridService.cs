@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Debryfin.Configuration;
 using Debryfin.Providers;
+using Debryfin.Resolution;
 using MediaBrowser.Model.Logging;
 
 namespace Debryfin
@@ -16,10 +17,8 @@ namespace Debryfin
         private readonly ILogger _logger;
         private readonly HttpClient _httpClient;
         private readonly ProviderRegistry _registry;
-        // P0-05: adds coalescing of simultaneous requests and backoff on failures.
-        // The real clock (UtcNow) is injected here, at the composition point;
-        // the LinkResolver/NegativeCache logic receives it injected and is testable.
-        private readonly Resolution.LinkResolver _linkResolver;
+        private readonly ILinkResolver _linkResolver;
+        private readonly Func<DebryfinOptions> _optionsAccessor;
 
         // Test seam (InternalsVisibleTo "Debryfin.Tests"): exposes the composition point so
         // tests can verify which provider is wired for each DebridProvider id.
@@ -33,9 +32,25 @@ namespace Debryfin
         // Test seam (InternalsVisibleTo "Debryfin.Tests"): allows injecting a fake
         // HttpClient so provider requests can be characterized without any network.
         internal DebridService(ILogger logger, HttpClient httpClient)
+            : this(
+                logger,
+                httpClient,
+                new LinkResolver(() => DateTime.UtcNow),
+                () => Plugin.Instance?.SafeGetOptions())
+        {
+        }
+
+        internal DebridService(
+            ILogger logger,
+            HttpClient httpClient,
+            ILinkResolver linkResolver,
+            Func<DebryfinOptions> optionsAccessor)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _linkResolver = linkResolver ?? throw new ArgumentNullException(nameof(linkResolver));
+            _optionsAccessor = optionsAccessor ?? (() => Plugin.Instance?.SafeGetOptions());
+
             _registry = new ProviderRegistry();
             // P1-01/P1-02/P1-05/P1-06: Real-Debrid, AllDebrid, TorBox and Premiumize use
             // their native IDebridProvider.
@@ -43,7 +58,6 @@ namespace Debryfin
             _registry.Register(new AllDebridProvider(_httpClient));
             _registry.Register(new TorBoxProvider(_httpClient));
             _registry.Register(new PremiumizeProvider(_httpClient));
-            _linkResolver = new Resolution.LinkResolver(() => DateTime.UtcNow);
         }
 
         private static HttpClient CreateDefaultHttpClient()
@@ -55,7 +69,7 @@ namespace Debryfin
 
         public async Task<string> UnrestrictLinkAsync(string sourceLink, CancellationToken ct)
         {
-            var config = Plugin.Instance?.SafeGetOptions();
+            var config = _optionsAccessor();
 
             if (config == null)
             {
@@ -63,33 +77,62 @@ namespace Debryfin
                 return null;
             }
 
-            var provider = _registry.Get(config.Provider);
-            if (provider == null)
+            var candidates = new List<(IDebridProvider Provider, string Key)>();
+
+            if (!string.IsNullOrEmpty(config.RealDebridApiKey))
             {
-                _logger.Warn($"Debryfin[{config.Provider}]: provider not implemented.");
+                var provider = _registry.Get(DebridProvider.RealDebrid);
+                if (provider != null) candidates.Add((provider, config.RealDebridApiKey));
+            }
+
+            if (!string.IsNullOrEmpty(config.AllDebridApiKey))
+            {
+                var provider = _registry.Get(DebridProvider.AllDebrid);
+                if (provider != null) candidates.Add((provider, config.AllDebridApiKey));
+            }
+
+            if (!string.IsNullOrEmpty(config.TorBoxApiKey))
+            {
+                var provider = _registry.Get(DebridProvider.TorBox);
+                if (provider != null) candidates.Add((provider, config.TorBoxApiKey));
+            }
+
+            if (!string.IsNullOrEmpty(config.PremiumizeApiKey))
+            {
+                var provider = _registry.Get(DebridProvider.Premiumize);
+                if (provider != null) candidates.Add((provider, config.PremiumizeApiKey));
+            }
+
+            if (candidates.Count == 0)
+            {
+                _logger.Warn("No provider API keys configured.");
                 return null;
             }
 
-            var apiKey = ProviderKeyResolver.Get(config, provider.Id);
-            if (string.IsNullOrEmpty(apiKey))
+            foreach (var (provider, key) in candidates)
             {
-                _logger.Error($"Debryfin[{provider.DisplayName}]: API Key not configured.");
-                return null;
+                try
+                {
+                    var result = await _linkResolver.ResolveAsync(provider, sourceLink, key, ct).ConfigureAwait(false);
+                    if (result != null && result.IsSuccess)
+                    {
+                        return result.Url;
+                    }
+
+                    _logger.Warn($"Provider {provider.DisplayName} failed: {result?.Message}. Trying next...");
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException($"Debryfin: Error connecting to provider {provider.DisplayName}.", ex);
+                }
+
+                if (!config.EnableFallback)
+                {
+                    break;
+                }
             }
 
-            try
-            {
-                // Resolution goes through LinkResolver (P0-05): applies coalescing by
-                // (provider, url) and negative cache with backoff. The public signature
-                // (string, null on failure) is kept.
-                var result = await _linkResolver.ResolveAsync(provider, sourceLink, apiKey, ct).ConfigureAwait(false);
-                return result.IsSuccess ? result.Url : null;
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Debryfin: Error connecting to provider.", ex);
-                return null;
-            }
+            return null;
         }
 
         internal async Task<string> CallRealDebrid(string link, string token, CancellationToken ct)
