@@ -252,7 +252,7 @@ Referencias de línea según el código actual; si el fichero cambió, localiza 
   - Criterio de aceptación: `ProviderKeyResolver.Get(id)` devuelve la key específica del proveedor; si está vacía y `id == Provider`, usa el `ApiKey` heredado (una instalación existente se comporta igual); tests de esa lógica. Validación: cada proveedor implementa `ValidateApiKeyAsync` — RD `GET https://api.real-debrid.com/rest/1.0/user` (**a verificar**), AD `GET https://api.alldebrid.com/v4/user` (Bearer; en la documentación), TorBox `GET /v1/api/user/me` (Bearer; forma de la respuesta **a verificar**), Premiumize `GET /api/account/info`. Al arrancar se valida la key del proveedor principal y se registra el resultado (sin secretos).
   - Notas: validación **al guardar** y botón "Probar conexión" dependen de las capacidades de `GenericEdit` (**a verificar en 4.10**) → P2-01.
 
-- [ ] **P1-08 · Fallback automático entre proveedores**
+- [x] **P1-08 · Fallback automático entre proveedores**
   - Archivos: `Resolution/LinkResolver.cs`, tests
   - Depende de: P1-07
   - Criterio de aceptación: con `EnableFallback`, la cadena es proveedor principal → los demás con key, saltando los que estén en caché negativa o marcados "no sanos" (AuthFailed reciente); Unsupported/NotFound/RateLimited/Transient pasan al siguiente; resultado de éxito se cachea con el TTL **del proveedor que respondió**. Tests: principal falla → responde el segundo; todos fallan → `ResolveOutcome` con el último error y backoff; con fallback desactivado se comporta como antes.
