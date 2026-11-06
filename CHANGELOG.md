@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.5.0.0] - 2026-11-05
 
 ### Added
+- Per-provider API key configuration (P1-07).
 - Native support for TorBox and Premiumize debrid providers.
 - Decoupled provider architecture (IDebridProvider) for easy addition of new services.
 
