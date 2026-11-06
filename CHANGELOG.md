@@ -5,16 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0.0] - 2026-11-06
+
+### Added
+- Per-provider API keys for Real-Debrid, AllDebrid, TorBox, and Premiumize.
+- Automatic provider fallback: if a configured provider fails to resolve a link, the plugin will try the next configured provider.
+
+### Changed
+- Removed legacy global API key and provider dropdown for a cleaner, simpler UI.
+- Refactored internal architecture to support independent provider configurations and fallback chains.
+
 ## [1.5.0.0] - 2026-11-05
 
 ### Added
-- Automatic fallback to other configured providers if the primary one fails (P1-08).
 - Per-provider API key configuration (P1-07).
 - Native support for TorBox and Premiumize debrid providers.
 - Decoupled provider architecture (IDebridProvider) for easy addition of new services.
 
 ### Changed
-- Removed legacy global API key and provider dropdown for a cleaner UI (P1-08).
 - Refactored Real-Debrid and AllDebrid into native provider implementations.
 - Moved AllDebrid API key to Authorization Bearer header for security.
 

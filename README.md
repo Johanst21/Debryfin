@@ -6,19 +6,20 @@
 
 <p align="center">
   <a href="https://www.gnu.org/licenses/gpl-3.0"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3"></a>
-  <a href="https://github.com/Johanst21/Debryfin/releases/tag/v1.5.0.0"><img src="https://img.shields.io/badge/Release-v1.5.0.0-green.svg" alt="Release v1.5.0.0"></a>
+  <a href="https://github.com/Johanst21/Debryfin/releases/tag/v1.6.0.0"><img src="https://img.shields.io/badge/Release-v1.6.0.0-green.svg" alt="Release v1.6.0.0"></a>
 </p>
 
 Emby server plugin that resolves .strm links to direct URLs via Debrid providers (Real-Debrid, AllDebrid, TorBox and Premiumize).
 
-**Status:** Version `v1.5.0.0`.
+**Status:** Version `v1.6.0.0`.
 
 ## Features
 * **Debrid Resolution:** Resolves `.strm` links to direct, high-speed playback URLs using Debrid providers.
-* **Supported Providers:** Full support for Real-Debrid, AllDebrid, TorBox and Premiumize.
+* **Supported Providers:** Support for Real-Debrid, AllDebrid, TorBox, and Premiumize.
+* **Automatic Provider Fallback:** If the primary configured provider fails or cannot resolve a link, Debryfin automatically attempts resolution with the next configured provider.
 * **URL Caching:** Built-in caching of resolved streaming URLs to reduce API requests and latency.
 * **Automatic Refresh:** Automatically refreshes stream links when expired.
-* **Configurable Credentials:** Plugin settings UI allowing easy configuration of per-provider API keys and options.
+* **Configurable Credentials:** Clean and intuitive plugin settings UI allowing easy configuration of per-provider API keys and fallback options.
 
 ## Requirements
 * **Emby Server:** Requires Emby Server 4.10 or newer. For Emby 4.9, use release v1.2.0.0.
