@@ -57,9 +57,9 @@ namespace Debryfin
         {
             var config = Plugin.Instance?.SafeGetOptions();
 
-            if (config == null || string.IsNullOrEmpty(config.ApiKey))
+            if (config == null)
             {
-                _logger.Error("Debryfin: Configuration or API Key not found.");
+                _logger.Error("Debryfin: Configuration not found.");
                 return null;
             }
 
@@ -70,12 +70,19 @@ namespace Debryfin
                 return null;
             }
 
+            var apiKey = ProviderKeyResolver.Get(config, provider.Id);
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                _logger.Error($"Debryfin[{provider.DisplayName}]: API Key not configured.");
+                return null;
+            }
+
             try
             {
                 // Resolution goes through LinkResolver (P0-05): applies coalescing by
                 // (provider, url) and negative cache with backoff. The public signature
                 // (string, null on failure) is kept.
-                var result = await _linkResolver.ResolveAsync(provider, sourceLink, config.ApiKey, ct).ConfigureAwait(false);
+                var result = await _linkResolver.ResolveAsync(provider, sourceLink, apiKey, ct).ConfigureAwait(false);
                 return result.IsSuccess ? result.Url : null;
             }
             catch (Exception ex)
